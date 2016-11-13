@@ -6,6 +6,7 @@ declare variable $index := concat($sampledir,"library.xml");
 
 declare option exist:serialize "method=xhtml media-type=application/xhtml+xml";
 
+(:
 let $isDba := xmldb:is-admin-user(xmldb:get-current-user())
 return
     if (not($isDba)) then
@@ -13,10 +14,12 @@ return
             <p>You have to be a member of the dba group. Please log in using the dashboard and retry.</p>
         </div>
 else 
+:)
+let $login := xmldb:login('/db', 'admin', '')
 
 let $sample := request:get-parameter("sample",())
 let $format := request:get-parameter("format","svg")
-let $items := doc($index)//gv:item
+let $items := doc('/db/apps/graphviz/samples/library.xml')//*:item
 
 return 
 <html xmlns ="http://www.w3.org/1999/xhtml">
@@ -26,7 +29,7 @@ return
       {if (empty($sample))
        then  
          <div>
-          <h2>Samples from BASEX</h2>
+          <h2>Samples from BASEX ({count($items)})</h2>
           <ul>
           {for $item in $items
            return
@@ -51,7 +54,7 @@ return
                    return gv:dot-to-svg($graph)                   
               else if ($item/gv:url/@type = "dotml")
               then 
-                   let $dotml := doc(concat($sampledir,$item/gv:url))
+                   let $dotml := if (ends-with($item/gv:url, '.xq')) then util:eval(xs:anyURI(concat($sampledir,$item/gv:url))) else doc(concat($sampledir,$item/gv:url))
                    let $graph := gv:dotml-to-dot($dotml)
                    return  
                        gv:dot-to-svg($graph) 
@@ -73,8 +76,13 @@ return
                    return <pre>{$graph}</pre>                 
               else if ($item/gv:url/@type = "dotml")
               then 
-                   let $dotml := doc(concat($sampledir,$item/gv:url))
-                   return  <pre>{util:serialize($dotml,"method=xml")}</pre>
+                   let $dotml := if (ends-with($item/gv:url, '.xq')) then util:eval(xs:anyURI(concat($sampledir,$item/gv:url))) else doc(concat($sampledir,$item/gv:url))
+                let $dot := gv:dotml-to-dot($dotml)
+                   return  (
+                       <pre>{util:serialize($dotml,"method=xml")}</pre>
+                       ,
+                       <pre>{$dot}</pre>
+                   )
               else()
             return
            <div> 

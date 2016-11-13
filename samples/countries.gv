@@ -1,0 +1,14 @@
+digraph countries {
+
+node [color=Green,fontcolor=Blue,font=Courier]
+
+ Josun_Dynasty -> Chosen
+ Chosen -> Korea
+ Korea -> North_Korea
+ Korea -> South_Korea
+ North_Korea -> Reunification
+ South_Korea -> Reunification
+
+ {rank=same; North_Korea South_Korea }
+
+}

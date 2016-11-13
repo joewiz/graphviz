@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <items xmlns="http://kitwallace.co.uk/ns/graphviz">
     <item id="G1">
         <title>Process</title>
@@ -53,5 +54,15 @@
         <title>XQuery Module Call Graph</title>
         <url type="dotml">xquery-module-call-graph.xml</url>
         <description>Sample left-to right call graph using cluster for each graph.</description>
+    </item>
+    <item id="G12">
+        <title>countries</title>
+        <url type="dot">countries.gv</url>
+        <description>hierarchy.</description>
+    </item>
+    <item id="G13">
+        <title>canada</title>
+        <url type="dotml">canada.xq</url>
+        <description>hierarchy.</description>
     </item>
 </items>
