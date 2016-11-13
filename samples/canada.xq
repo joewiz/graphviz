@@ -49,6 +49,20 @@ let $edges :=
                         ,
                         attribute label { "in " || $territory/valid-until }
                     }
+            ,
+            (: successors not mentioned in the lineage - need a label to prevent erroneous node labels :)
+            for $territory-id in $territory//successor[not(. = $territories/id)]
+            let $territory := collection('/db/apps/gsh/data/territories')/territory[id = $territory-id]
+            return
+                element 
+                    { QName("http://www.martin-loetzsch.de/DOTML", "node") }
+                    { 
+                        attribute id { $territory/id },
+                        attribute label { $territory/short-form-name || " (" || $territory/valid-since || "–" || (if ($territory/valid-until = '9999') then 'present' else $territory/valid-until) || ")" },
+                        $fontsize,
+                        $fontname
+                    }
+                
         )
 return 
     <graph file-name="graphs/nice_graph" rankdir="LR" xmlns="http://www.martin-loetzsch.de/DOTML">
