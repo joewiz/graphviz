@@ -24,7 +24,6 @@ let $items := doc('/db/apps/graphviz/samples/library.xml')//*:item
 return 
 <html xmlns ="http://www.w3.org/1999/xhtml">
 <body>
-      <h1>  <a href="?">Graphviz Samples</a>  </h1>
 
       {if (empty($sample))
        then  
@@ -61,9 +60,6 @@ return
               else()
             return
            <div> 
-             <h2> 
-                 {$item/gv:title/string()} &#160; {$item/gv:description/string()} [ {$item/gv:url/@type/string()} ] <a href="?sample={$sample}&amp;format=source">Source</a>
-              </h2>
              {$svg}  
            </div>
          else if ($format="source")
