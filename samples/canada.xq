@@ -36,7 +36,7 @@ declare function local:describe-successor-relationship($territory-id, $successor
             $relationship || " in " || $territory/valid-until
 };
 
-let $lineage-id := request:get-parameter('lineage-id', 42)
+let $lineage-id := request:get-parameter('lineage-id', 70)
 let $lineage := collection('/db/apps/gsh/data/lineages')//lineage[current-territory/territory-id = $lineage-id]
 let $territories := collection('/db/apps/gsh/data/territories')/territory[id = $lineage//territory-id]
 let $default-node-fontsize := attribute fontsize { 10 }
@@ -44,64 +44,47 @@ let $default-edge-fontsize := attribute fontsize { 9 }
 let $current-territory-fontsize := attribute fontsize { 12 }
 let $fontname := attribute fontname { "Arial" }
 let $nodes := 
-    for $territory in $territories
-    order by $territory/valid-since
-    return
-        element 
-            { QName("http://www.martin-loetzsch.de/DOTML", "node") }
-            { 
-                attribute id { $territory/id },
-                attribute label { $territory/short-form-name || " (" || $territory/valid-since || "–" || (if ($territory/valid-until = '9999') then 'present' else $territory/valid-until) || ")" },
-                if ($territory/exists-on-todays-map = 'true') then $current-territory-fontsize else $default-node-fontsize,
-                $fontname
-            }
+    (
+        for $territory in $territories
+        order by $territory/valid-since
+        return
+            element 
+                { QName("http://www.martin-loetzsch.de/DOTML", "node") }
+                { 
+                    attribute id { $territory/id },
+                    attribute label { $territory/short-form-name || " (" || $territory/valid-since || "–" || (if ($territory/valid-until = '9999') then 'present' else $territory/valid-until) || ")" },
+                    if ($territory/exists-on-todays-map = 'true') then $current-territory-fontsize else $default-node-fontsize,
+                    $fontname
+                }
+        ,
+        (: successors not mentioned in the lineage - need a label to prevent erroneous node labels :)
+        for $territory-id in $territories//successor[not(. = $territories/id)]
+        let $territory := collection('/db/apps/gsh/data/territories')/territory[id = $territory-id]
+        return
+            element 
+                { QName("http://www.martin-loetzsch.de/DOTML", "node") }
+                { 
+                    attribute id { $territory/id },
+                    attribute label { $territory/short-form-name || " (" || $territory/valid-since || "–" || (if ($territory/valid-until = '9999') then 'present' else $territory/valid-until) || ")" },
+                    if ($territory/exists-on-todays-map = 'true') then $current-territory-fontsize else $default-node-fontsize,
+                    $fontname
+                }
+    )
 let $edges := 
     for $territory in $territories
     return
-        (
-            (:
-            for $predecessor at $n in $territory//predecessor
-            return
-                element
-                    { QName("http://www.martin-loetzsch.de/DOTML", "edge") }
-                    {
-                        attribute from { $predecessor },
-                        attribute to { $territory/id },
-                        $fontname,
-                        $fontsize
-                        ,
-                        attribute label { "is predecessor of" }
-                        
-                    }
-            ,
-            :)
-            for $successor at $n in $territory//successor
-            return
-                element
-                    { QName("http://www.martin-loetzsch.de/DOTML", "edge") }
-                    {
-                        attribute from { $territory/id },
-                        attribute to { $successor },
-                        $fontname,
-                        $default-edge-fontsize
-                        ,
-                        attribute label { local:describe-successor-relationship($territory/id, $successor, false()) }
-                    }
-            ,
-            (: successors not mentioned in the lineage - need a label to prevent erroneous node labels :)
-            for $territory-id in $territory//successor[not(. = $territories/id)]
-            let $territory := collection('/db/apps/gsh/data/territories')/territory[id = $territory-id]
-            return
-                element 
-                    { QName("http://www.martin-loetzsch.de/DOTML", "node") }
-                    { 
-                        attribute id { $territory/id },
-                        attribute label { $territory/short-form-name || " (" || $territory/valid-since || "–" || (if ($territory/valid-until = '9999') then 'present' else $territory/valid-until) || ")" },
-                        if ($territory/exists-on-todays-map = 'true') then $current-territory-fontsize else $default-node-fontsize,
-                        $fontname
-                    }
-                
-        )
+        for $successor at $n in $territory//successor
+        return
+            element
+                { QName("http://www.martin-loetzsch.de/DOTML", "edge") }
+                {
+                    attribute from { $territory/id },
+                    attribute to { $successor },
+                    $fontname,
+                    $default-edge-fontsize
+                    ,
+                    attribute label { local:describe-successor-relationship($territory/id, $successor, false()) }
+                }
 return 
     <graph file-name="graphs/nice_graph" rankdir="LR" xmlns="http://www.martin-loetzsch.de/DOTML">
         { $nodes }
