@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project default="xar" name="graphviz">
+<project default="all" name="graphviz">
     <property name="project.app" value="graphviz"/>
     <property name="project.version" value="0.1"/>
     <property name="build.dir" value="build"/>
+    <target name="all" depends="xar"/>
+    <target name="rebuild" depends="clean,all"/>
+    <target name="clean">
+        <delete dir="${build}"/>
+    </target>
     <target name="xar">
         <mkdir dir="${build.dir}"/>
         <zip basedir="." destfile="${build.dir}/${project.app}-${project.version}.xar" excludes="${build.dir}/*"/>
